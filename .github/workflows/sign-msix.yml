@@ -1,0 +1,40 @@
+name: Sign fork MSIX
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  sign:
+    runs-on: windows-2025
+    steps:
+      - name: Repackage, sign, verify and publish
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $repo = 'minorri0414/TranslucentTB'
+          if ($env:GITHUB_REPOSITORY -ne $repo) { throw 'Unexpected repository' }
+          gh release download 2026.2-insider-hotfix.2 -R $repo -D dist
+          foreach ($line in Get-Content dist/SHA256SUMS.txt) {
+            $hash,$file = $line -split '\s+',2
+            if ((Get-FileHash "dist/$file").Hash -ne $hash) { throw "Hash mismatch: $file" }
+          }
+          $sdk = (Get-ChildItem "${env:ProgramFiles(x86)}/Windows Kits/10/bin/*/x64/makeappx.exe" | Sort-Object FullName -Descending | Select-Object -First 1).DirectoryName
+          & "$sdk/makeappx.exe" unpack /p dist/TranslucentTB-x64.msix /d unpacked /o
+          $file = (Resolve-Path unpacked/AppxManifest.xml).Path
+          [xml]$manifest = Get-Content $file -Raw
+          $manifest.Package.Identity.Name = 'minorri0414.TranslucentTB'
+          $manifest.Package.Identity.Publisher = 'CN=minorri0414'
+          $manifest.Package.Identity.Version = '2026.2.3.0'
+          $manifest.Package.Properties.PublisherDisplayName = 'minorri0414'
+          $manifest.Save($file)
+          & "$sdk/makeappx.exe" pack /d unpacked /p dist/TranslucentTB-x64.msix /o
+          $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=minorri0414' -CertStoreLocation Cert:\CurrentUser\My -KeyExportPolicy NonExportable -HashAlgorithm SHA256 -NotAfter (Get-Date).AddYears(1)
+          Export-Certificate -Cert $cert -FilePath dist/minorri0414.cer
+          & "$sdk/signtool.exe" sign /s My /sha1 $cert.Thumbprint /fd SHA256 dist/TranslucentTB-x64.msix
+          Import-Certificate -FilePath dist/minorri0414.cer -CertStoreLocation Cert:\LocalMachine\TrustedPeople
+          & "$sdk/signtool.exe" verify /pa /v dist/TranslucentTB-x64.msix
+          Get-FileHash dist/*.zip,dist/*.msix,dist/*.cer | ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } | Set-Content dist/SHA256SUMS.txt
+          $assets = @(Get-ChildItem dist -File | ForEach-Object FullName)
+          gh release create 2026.2-insider-hotfix.3 @assets -R $repo --target $env:GITHUB_SHA --title "TranslucentTB Insider hotfix (x64, fork-signed MSIX)" --notes "Same hotfix binaries as .2. The MSIX uses a fork-specific identity and a self-signed code-signing certificate. For installation, verify the certificate SHA256 and import the CER into Local Machine / Trusted People. The portable ZIP is unchanged and needs no certificate. Certificate SHA256: $((Get-FileHash dist/minorri0414.cer).Hash). The signing key is ephemeral; future releases may require trusting a new certificate."

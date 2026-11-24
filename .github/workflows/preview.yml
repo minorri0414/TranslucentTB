@@ -17,7 +17,7 @@ jobs:
           & "$env:VCPKG_INSTALLATION_ROOT/vcpkg.exe" integrate install
           nuget restore TranslucentTB.slnx -Source https://api.nuget.org/v3/index.json
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          msbuild TranslucentTB.slnx /m /p:Configuration=Release /p:Platform=x64 /p:BuildType=Dev /p:AppxPackageSigningEnabled=false /p:GenerateAppxPackageOnBuild=true /p:AppxBundle=Never
+          msbuild TranslucentTB.slnx /m:1 /p:BuildInParallel=false /p:Configuration=Release /p:Platform=x64 /p:BuildType=Dev /p:AppxPackageSigningEnabled=false /p:GenerateAppxPackageOnBuild=true /p:AppxBundle=Never
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
       - name: Test
         shell: pwsh

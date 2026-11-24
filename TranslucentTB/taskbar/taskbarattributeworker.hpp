@@ -178,6 +178,11 @@ private:
 	LRESULT OnRequestAttributeRefresh(LPARAM lParam);
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
+	struct ExtendedWindow { RECT original, extended; DWORD thread; };
+	std::unordered_map<HWND, ExtendedWindow> m_ExtendedWindows;
+	void RestoreExtendedWindows();
+	void ExtendWindow(HWND window, HWND taskbar, HMONITOR monitor);
+
 	// Config
 	TaskbarAppearance GetConfig(taskbar_iterator taskbar) const;
 

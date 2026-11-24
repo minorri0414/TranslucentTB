@@ -49,6 +49,7 @@ public:
 	WindowFilter IgnoredWindows;
 	std::optional<bool> HideTray;
 	bool DisableSaving = false;
+	bool ExtendMaximized = false;
 	spdlog::level::level_enum LogVerbosity = DEFAULT_LOG_VERBOSITY;
 	std::wstring Language;
 	std::optional<bool> UseXamlContextMenu;
@@ -67,6 +68,7 @@ public:
 		rjh::Serialize(writer, IgnoredWindows, IGNORED_WINDOWS_KEY);
 		rjh::Serialize(writer, HideTray, TRAY_KEY);
 		rjh::Serialize(writer, DisableSaving, SAVING_KEY);
+		rjh::Serialize(writer, ExtendMaximized, EXTEND_KEY);
 		rjh::Serialize(writer, LogVerbosity, LOG_KEY, LOG_MAP);
 		if (!Language.empty())
 		{
@@ -125,6 +127,10 @@ public:
 			{
 				rjh::Deserialize(it->value, DisableSaving, key);
 			}
+			else if (key == EXTEND_KEY)
+			{
+				rjh::Deserialize(it->value, ExtendMaximized, key);
+			}
 			else if (key == LOG_KEY)
 			{
 				rjh::Deserialize(it->value, LogVerbosity, key, LOG_MAP);
@@ -181,6 +187,7 @@ private:
 	static constexpr std::wstring_view IGNORED_WINDOWS_KEY = L"ignored_windows";
 	static constexpr std::wstring_view TRAY_KEY = L"hide_tray";
 	static constexpr std::wstring_view SAVING_KEY = L"disable_saving";
+	static constexpr std::wstring_view EXTEND_KEY = L"extend_maximized";
 	static constexpr std::wstring_view LOG_KEY = L"verbosity";
 	static constexpr std::wstring_view LANGUAGE_KEY = L"language";
 	static constexpr std::wstring_view USE_XAML_CONTEXT_MENU_KEY = L"use_xaml_context_menu";

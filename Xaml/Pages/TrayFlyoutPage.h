@@ -32,6 +32,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		DECL_EVENT(EditSettingsRequestedDelegate, EditSettingsRequested, m_EditSettingsRequestedDelegate);
 		DECL_EVENT(ResetSettingsRequestedDelegate, ResetSettingsRequested, m_ResetSettingsRequestedDelegate);
 		DECL_EVENT(DisableSavingSettingsChangedDelegate, DisableSavingSettingsChanged, m_DisableSavingSettingsChangedDelegate);
+		DECL_EVENT(ExtendMaximizedChangedDelegate, ExtendMaximizedChanged, m_ExtendMaximizedChangedDelegate);
 		DECL_EVENT(ResetDynamicStateRequestedDelegate, ResetDynamicStateRequested, m_ResetDynamicStateRequestedDelegate);
 		DECL_EVENT(CompactThunkHeapRequestedDelegate, CompactThunkHeapRequested, m_CompactThunkHeapRequestedDelegate);
 
@@ -44,6 +45,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void SetTaskbarType(const txmp::TaskbarType &type);
 		void SetLogLevel(const txmp::LogLevel &level);
 		void SetDisableSavingSettings(const bool &disabled);
+		void SetExtendMaximized(const bool &enabled);
 		void SetStartupState(const wf::IReference<Windows::ApplicationModel::StartupTaskState> &state);
 
 		DECL_PROPERTY_CHANGED_FUNCS(txmp::LogSinkState, SinkState, m_SinkState);
@@ -58,6 +60,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void EditSettingsClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void ResetSettingsClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void DisableSavingSettingsClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
+		void ExtendMaximizedClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void ResetDynamicStateClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void CompactThunkHeapClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 

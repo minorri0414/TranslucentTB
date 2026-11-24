@@ -106,6 +106,7 @@
                 <MenuFlyoutSubItem.Icon>
                     <FontIcon Glyph="&#xE740;" />
                 </MenuFlyoutSubItem.Icon>
+                <ToggleMenuFlyoutItem x:Name="ExtendMaximized" x:Uid="TrayFlyoutPage_ExtendMaximized" Click="ExtendMaximizedClicked" />
                 <ToggleMenuFlyoutItem Tag="Enabled" x:Uid="TrayFlyoutPage_Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
                 <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
                 <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />

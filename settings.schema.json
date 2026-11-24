@@ -140,6 +140,7 @@
     "hide_tray": {
       "type": "boolean"
     },
+    "extend_maximized": { "type": "boolean", "default": false },
     "disable_saving": {
       "type": "boolean"
     },

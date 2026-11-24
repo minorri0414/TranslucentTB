@@ -112,6 +112,7 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG 
 		}
 		else if (event == EVENT_OBJECT_DESTROY)
 		{
+			m_ExtendedWindows.erase(hwnd);
 			// events are asynchronous, the window might be invalid already
 			// important to not try to query its info here, just go off the handle
 			AttributeRefresher refresher(*this);
@@ -616,12 +617,75 @@ void TaskbarAttributeWorker::SetAttribute(taskbar_iterator taskbar, TaskbarAppea
 	}
 }
 
+namespace
+{
+	bool ResizeWithoutActivating(HWND window, const RECT &r)
+	{
+		return SetWindowPos(window, nullptr, r.left, r.top, r.right - r.left, r.bottom - r.top,
+			SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_ASYNCWINDOWPOS) != FALSE;
+	}
+}
+
+void TaskbarAttributeWorker::RestoreExtendedWindows()
+{
+	auto windows = std::move(m_ExtendedWindows);
+	m_ExtendedWindows.clear();
+	for (const auto &[window, saved] : windows)
+	{
+		RECT current;
+		if (GetWindowThreadProcessId(window, nullptr) == saved.thread && IsZoomed(window) &&
+			GetWindowRect(window, &current) && EqualRect(&current, &saved.extended))
+		{
+			ResizeWithoutActivating(window, saved.original);
+		}
+	}
+}
+
+void TaskbarAttributeWorker::ExtendWindow(HWND window, HWND taskbar, HMONITOR monitor)
+{
+	RECT current, bar;
+	MONITORINFO info { sizeof(MONITORINFO) };
+	if (!IsZoomed(window) || IsIconic(window) || !GetWindowRect(window, &current) ||
+		!GetWindowRect(taskbar, &bar) || !GetMonitorInfo(monitor, &info))
+	{
+		return;
+	}
+	if (const auto it = m_ExtendedWindows.find(window); it != m_ExtendedWindows.end())
+	{
+		if (EqualRect(&current, &it->second.extended)) return;
+		m_ExtendedWindows.erase(it);
+	}
+	// Extend only the edge reserved by this monitor's taskbar.
+	auto target = current;
+	if (bar.top == info.rcWork.bottom && bar.bottom == info.rcMonitor.bottom && current.bottom < bar.bottom)
+		target.bottom += bar.bottom - bar.top;
+	else if (bar.bottom == info.rcWork.top && bar.top == info.rcMonitor.top && current.top > bar.top)
+		target.top -= bar.bottom - bar.top;
+	else if (bar.left == info.rcWork.right && bar.right == info.rcMonitor.right && current.right < bar.right)
+		target.right += bar.right - bar.left;
+	else if (bar.right == info.rcWork.left && bar.left == info.rcMonitor.left && current.left > bar.left)
+		target.left -= bar.right - bar.left;
+	else return;
+
+	m_ExtendedWindows.emplace(window, ExtendedWindow { current, target, GetWindowThreadProcessId(window, nullptr) });
+	if (!ResizeWithoutActivating(window, target)) m_ExtendedWindows.erase(window);
+}
+
 void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 {
 	// These functions may trigger Windows internal message loops,
 	// do not pass any member of taskbar map by reference.
 	// See comment in InsertWindow.
 	const auto taskbarInfo = taskbar->second.Taskbar;
+
+	if (!m_ConfigManager.GetConfig().ExtendMaximized)
+	{
+		RestoreExtendedWindows();
+	}
+	else if (taskbar->second.MaximisedWindows.contains(m_ForegroundWindow))
+	{
+		ExtendWindow(m_ForegroundWindow, taskbarInfo.TaskbarWindow, taskbar->first);
+	}
 
 	const auto &cfg = GetConfig(taskbar);
 	SetAttribute(taskbar, cfg);
@@ -1576,6 +1640,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 
 TaskbarAttributeWorker::~TaskbarAttributeWorker() noexcept(false)
 {
+	RestoreExtendedWindows();
 	m_disableAttributeRefreshReply = true;
 	UnregisterTaskViewCallbacks();
 	UnregisterSearchCallbacks();

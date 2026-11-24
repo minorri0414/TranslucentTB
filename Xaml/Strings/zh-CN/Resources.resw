@@ -292,4 +292,5 @@
   <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
     <value>祝你使用愉快！</value>
   </data>
+  <data name="TrayFlyoutPage_ExtendMaximized.Text" xml:space="preserve"><value>将窗口延伸到任务栏后方</value></data>
 </root>

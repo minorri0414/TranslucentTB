@@ -1,0 +1,39 @@
+name: Build maximized window preview
+on:
+  push:
+    branches: [feature/extend-maximized]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: microsoft/setup-msbuild@v2
+      - uses: NuGet/setup-nuget@v2
+      - name: Restore and build
+        shell: pwsh
+        run: |
+          & "$env:VCPKG_INSTALLATION_ROOT/vcpkg.exe" integrate install
+          nuget restore TranslucentTB.slnx -Source https://api.nuget.org/v3/index.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          msbuild TranslucentTB.slnx /m /p:Configuration=Release /p:Platform=x64 /p:BuildType=Dev /p:AppxPackageSigningEnabled=false /p:GenerateAppxPackageOnBuild=true /p:AppxBundle=Never
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Test
+        shell: pwsh
+        run: |
+          & ./x64/Release/Tests.exe
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Package
+        shell: pwsh
+        run: |
+          ./.azp/scripts/create-portable.ps1 -Platform x64 -Configuration Release -WorkDir "$env:RUNNER_TEMP/portable" -OutputDir dist -NoConfig -Compress
+          $packages = @(Get-ChildItem AppPackage/AppPackages -Recurse -Filter *.msix)
+          if ($packages.Count -ne 1) { throw "Expected one x64 MSIX, found $($packages.Count)" }
+          Copy-Item $packages[0].FullName dist/TranslucentTB-x64.msix
+          Copy-Item LICENSE.md dist/
+          Get-FileHash dist/*.zip,dist/*.msix -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } | Set-Content dist/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extend-maximized-x64
+          path: dist/

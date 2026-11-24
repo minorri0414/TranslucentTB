@@ -118,6 +118,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		DisableSavingSettings().IsChecked(disabled);
 	}
+	void TrayFlyoutPage::SetExtendMaximized(const bool &enabled)
+	{
+		ExtendMaximized().IsChecked(enabled);
+	}
 
 	void TrayFlyoutPage::SetStartupState(const wf::IReference<Windows::ApplicationModel::StartupTaskState> &state)
 	{
@@ -199,6 +203,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	void TrayFlyoutPage::DisableSavingSettingsClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		m_DisableSavingSettingsChangedDelegate(DisableSavingSettings().IsChecked());
+	}
+	void TrayFlyoutPage::ExtendMaximizedClicked(const IInspectable &, const wux::RoutedEventArgs &)
+	{
+		m_ExtendMaximizedChangedDelegate(ExtendMaximized().IsChecked());
 	}
 
 	void TrayFlyoutPage::ResetDynamicStateClicked(const IInspectable &, const wux::RoutedEventArgs&)

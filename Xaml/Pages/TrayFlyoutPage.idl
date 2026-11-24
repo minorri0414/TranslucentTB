@@ -15,6 +15,7 @@ namespace TranslucentTB.Xaml.Pages
 	delegate void EditSettingsRequestedDelegate();
 	delegate void ResetSettingsRequestedDelegate();
 	delegate void DisableSavingSettingsChangedDelegate(Boolean disabled);
+	delegate void ExtendMaximizedChangedDelegate(Boolean enabled);
 	delegate void ResetDynamicStateRequestedDelegate();
 	delegate void CompactThunkHeapRequestedDelegate();
 
@@ -36,6 +37,7 @@ namespace TranslucentTB.Xaml.Pages
 		event EditSettingsRequestedDelegate EditSettingsRequested;
 		event ResetSettingsRequestedDelegate ResetSettingsRequested;
 		event DisableSavingSettingsChangedDelegate DisableSavingSettingsChanged;
+		event ExtendMaximizedChangedDelegate ExtendMaximizedChanged;
 		event ResetDynamicStateRequestedDelegate ResetDynamicStateRequested;
 		event CompactThunkHeapRequestedDelegate CompactThunkHeapRequested;
 
@@ -48,6 +50,7 @@ namespace TranslucentTB.Xaml.Pages
 		void SetTaskbarType(TranslucentTB.Xaml.Models.Primitives.TaskbarType type);
 		void SetLogLevel(TranslucentTB.Xaml.Models.Primitives.LogLevel level);
 		void SetDisableSavingSettings(Boolean disabled);
+		void SetExtendMaximized(Boolean enabled);
 		void SetStartupState(Windows.Foundation.IReference<Windows.ApplicationModel.StartupTaskState> state);
 
 		TranslucentTB.Xaml.Models.Primitives.LogSinkState SinkState;

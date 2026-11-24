@@ -301,4 +301,5 @@ Changes are automatically reloaded when you save the file</value>
   <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
     <value>if you have any problem or want to see a feature added!</value>
   </data>
+  <data name="TrayFlyoutPage_ExtendMaximized.Text" xml:space="preserve"><value>Extend window behind taskbar</value></data>
 </root>

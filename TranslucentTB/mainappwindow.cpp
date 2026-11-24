@@ -86,6 +86,7 @@ void MainAppWindow::RefreshMenu()
 	}
 
 	trayPage.SetDisableSavingSettings(settings.DisableSaving);
+	trayPage.SetExtendMaximized(settings.ExtendMaximized);
 
 	trayPage.SetStartupState(m_App.GetStartupManager().GetState());
 }
@@ -103,6 +104,7 @@ void MainAppWindow::RegisterMenuHandlers()
 	m_ResetSettingsRequestedRevoker = menu.ResetSettingsRequested(winrt::auto_revoke, { this, &MainAppWindow::ResetSettingsRequested });
 	m_ResetDynamicStateRequestedRevoker = menu.ResetDynamicStateRequested(winrt::auto_revoke, { this, &MainAppWindow::ResetDynamicStateRequested });
 	m_DisableSavingSettingsChangedRevoker = menu.DisableSavingSettingsChanged(winrt::auto_revoke, { this, &MainAppWindow::DisableSavingSettingsChanged });
+	m_ExtendMaximizedChangedRevoker = menu.ExtendMaximizedChanged(winrt::auto_revoke, { this, &MainAppWindow::ExtendMaximizedChanged });
 	m_ResetDynamicStateRequestedRevoker = menu.ResetDynamicStateRequested(winrt::auto_revoke, { this, &MainAppWindow::ResetDynamicStateRequested });
 	m_CompactThunkHeapRequestedRevoker = menu.CompactThunkHeapRequested(winrt::auto_revoke, MainAppWindow::CompactThunkHeapRequested);
 
@@ -233,6 +235,11 @@ void MainAppWindow::ResetSettingsRequested()
 void MainAppWindow::DisableSavingSettingsChanged(bool disabled) noexcept
 {
 	m_App.GetConfigManager().GetConfig().DisableSaving = disabled;
+}
+void MainAppWindow::ExtendMaximizedChanged(bool enabled) noexcept
+{
+	m_App.GetConfigManager().GetConfig().ExtendMaximized = enabled;
+	m_App.GetWorker().ConfigurationChanged();
 }
 
 void MainAppWindow::ResetDynamicStateRequested()
